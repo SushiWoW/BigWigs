@@ -272,7 +272,7 @@ do
 		if self:Mythic() then
 			self:CDBar(355536, 50, L.adds) -- Mythic add spawn
 			self:CDBar(359495, 5, self:SpellName(359495)) -- Intermission Spiked Balls
-			self:CDBar(356808, 20, L.noGapWall) -- Intermission Spike Wall with no gap
+			self:CDBar(356808, 25, L.noGapWall) -- Intermission Spike Wall with no gap
 		end
 
 		self:Bar("stages", self:Mythic() and 51.8 or 41.8, CL.intermission, args.spellId) -- 35s (45 on Mythic) Forge Weapon + 6.8s to jump down
@@ -287,11 +287,11 @@ do
 		self:Message("stages", "cyan", CL.soon:format(args.sourceName), false)
 		self:PlaySound("stages", "long")
 
-		self:Bar(355505, 14.6, CL.count:format(L.chains, chainsCount)) -- Shadowsteel Chains
+		self:Bar(355505, self:Mythic() and 10 or 14.6, CL.count:format(L.chains, chainsCount)) -- Shadowsteel Chains
 		-- Axe -> Hammer -> Scythe
 		local spellId = self:GetStage() == 3 and 355778 or 348508
 		self:Bar(spellId, 17, CL.count:format(L[weaponNames[spellId]], instrumentCount)) -- Instruments of Pain
-		self:Bar(352052, self:Mythic() and 6.8 or 26, CL.count:format(self:SpellName(352052), spikedBallsCount)) -- Spiked Balls
-		self:Bar(348456, self:Mythic() and 51.8 or (self:GetStage() == 3 and 48 or 36), CL.count:format(CL.traps, trapsCount)) -- Flameclasp Trap
+		self:Bar(352052, (self:Mythic() and self:GetStage() == 3 and 17) or self:Mythic() and 20 or 26, CL.count:format(self:SpellName(352052), spikedBallsCount)) -- Spiked Balls
+		self:Bar(348456, (self:Mythic() and self:GetStage() == 3 and 35) or self:Mythic() and 38 or (self:GetStage() == 3 and 48 or 36), CL.count:format(CL.traps, trapsCount)) -- Flameclasp Trap
 	end
 end
