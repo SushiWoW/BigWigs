@@ -18,6 +18,7 @@ local instrumentCount = 1
 local spikedBallsCount = 1
 local trapsCount = 1
 local chainsCount = 1
+local intermissionBallsCount = 0
 local weaponNames = {
 	[348508] = "hammer",
 	[355568] = "axe",
@@ -36,6 +37,7 @@ if L then
 	L.trap = "Trap" -- Short for Flameclasp Trap
 	L.chains = "Chains" -- Short for Shadowsteel Chains
 	L.embers = "Embers" -- Short for Shadowsteel Embers
+	L.adds = "Adds"
 end
 
 --------------------------------------------------------------------------------
@@ -72,6 +74,7 @@ function mod:OnBossEnable()
 	self:Log("SPELL_AURA_REMOVED", "InstrumentRemoved", 348508, 355568, 355778)
 
 	self:Log("SPELL_AURA_APPLIED", "SpikedBalls", 352052)
+	self:Log("SPELL_AURA_APPLIED", "IntermissionSpikedBalls", 359495)
 	self:Log("SPELL_AURA_APPLIED", "BlackenedArmorApplied", 355786)
 
 	self:Log("SPELL_AURA_APPLIED", "FlameclaspTrapApplied", 348456)
@@ -97,8 +100,8 @@ function mod:OnEngage()
 
 	self:CDBar(355505, 11, CL.count:format(L.chains, chainsCount)) -- Shadowsteel Chains
 	self:CDBar(355568, self:Mythic() and 12 or 17, CL.count:format(L.axe, instrumentCount)) -- Axe
-	self:CDBar(352052, self:Mythic() and 26.8 or 20, CL.count:format(self:SpellName(352052), spikedBallsCount)) -- Spiked Balls
-	self:CDBar(348456, self:Mythic() and 42 or 45, CL.count:format(CL.traps, trapsCount)) -- Flameclasp Trap
+	self:CDBar(352052, self:Mythic() and 16.8 or 20, CL.count:format(self:SpellName(352052), spikedBallsCount)) -- Spiked Balls
+	self:CDBar(348456, self:Mythic() and 40 or 45, CL.count:format(CL.traps, trapsCount)) -- Flameclasp Trap
 
 	self:RegisterUnitEvent("UNIT_HEALTH", nil, "boss1")
 end
@@ -147,6 +150,15 @@ function mod:SpikedBalls(args)
 	self:PlaySound(args.spellId, "alarm")
 	spikedBallsCount = spikedBallsCount + 1
 	self:Bar(args.spellId, 41.4, CL.count:format(args.spellName, spikedBallsCount))
+end
+
+function mod:IntermissionSpikedBalls(args)
+	intermissionBallsCount = intermissionBallsCount + 1
+	self:Message(args.spellId, "red",args.spellName, spikedBallsCount)
+	self:PlaySound(args.spellId, "alarm")
+	if intermissionBallsCount == 1 then
+		self:Bar(args.spellId, 20, args.spellName)
+	end
 end
 
 function mod:BlackenedArmorApplied(args)
@@ -238,6 +250,7 @@ do
 	end
 
 	function mod:ForgeWeapon(args)
+		intermissionBallsCount = 0
 		self:StopBar(CL.count:format(CL.traps, trapsCount)) -- Flameclasp Trap
 		self:StopBar(CL.count:format(self:SpellName(352052), spikedBallsCount)) -- Spiked Balls
 		self:StopBar(CL.count:format(L.chains, chainsCount)) -- Chains
@@ -247,9 +260,15 @@ do
 		self:Message("stages", "cyan", CL.intermission, args.spellId)
 		self:PlaySound("stages", "info")
 
+
 		emberCount = 2 -- First happens instantly on Intermission start
 		self:Bar(355534, 5, CL.count:format(L.embers, emberCount))
 		self:ScheduleTimer("RepeatEmber", 5)
+
+		if self:Mythic() then
+			self:CDBar(355536, 50, L.adds) -- Mythic add spawn
+			self:CDBar(359495, 5, self:SpellName(359495)) -- Intermission Spiked Balls
+		end
 
 		self:Bar("stages", self:Mythic() and 51.8 or 41.8, CL.intermission, args.spellId) -- 35s (45 on Mythic) Forge Weapon + 6.8s to jump down
 	end
