@@ -14,6 +14,7 @@ mod:SetRespawnTime(50)
 
 local nextShatterWarning = 83
 local prevBombsRemoved = 0
+local shatterCount = 0
 
 --------------------------------------------------------------------------------
 -- Localization
@@ -82,6 +83,7 @@ end
 
 function mod:OnEngage()
 	nextShatterWarning = 83
+	shatterCount = 0
 
 	self:CDBar(350676, 13, L.orbs) -- Orb of Torment
 	self:CDBar(349890, 20.3, CL.beam) -- Suffering
@@ -140,7 +142,7 @@ function mod:UNIT_SPELLCAST_SUCCEEDED(_, _, _, spellId)
 		self:StopBar(L.orbs)
 		self:Message(spellId, "yellow", L.orbs)
 		self:PlaySound(spellId, "alert")
-		self:CDBar(spellId, 50, L.orbs) -- ???
+		self:CDBar(spellId, self:Mythic() and 40 or 50, L.orbs) -- ???
 		-- Shatter (Helm), 53.5, Shatter (Gauntlet), 51.1, 48.6, Shatter (Rattlecage), 58.5, 46.1
 		-- Shatter (Helm), 54.7, Shatter (Gauntlet), 74.1, 42.6, Shatter (Rattlecage), 60.8, 52.2
 	end
@@ -244,6 +246,13 @@ do
 	end
 
 	function mod:Suffering(args)
+		local cd = 13
+        if self:BarTimeLeft(CL.bombs) < cd then
+            self:CDBar(350469, cd, CL.bombs) -- Malevolence
+        end
+        if self:BarTimeLeft(L.cones) < cd then
+            self:CDBar(355123, cd, L.cones) -- Grasp of Malice
+        end
 		self:GetBossTarget(printTarget, 0.1, args.sourceGUID)
 		self:CDBar(349890, 24.4, CL.beam)
 		-- 32.8, Shatter (Gauntlet), 31.6, 19.5, 24.3, 24.3, 25.6, Shatter (Rattlecage), 28.1, 21.9, 24.3, 21.9
@@ -270,12 +279,21 @@ function mod:GraspOfMalice(args)
 	self:StopBar(L.cones)
 	self:Message(args.spellId, "yellow", L.cones)
 	self:PlaySound(args.spellId, "alert")
-	self:CDBar(args.spellId, 24, L.cones) -- ???
+	self:CDBar(args.spellId, self:Mythic() and 30 or 24, L.cones) -- ???
 	-- 31.6, Shatter (Gauntlet), 51.1, 25.5, 23.2, Shatter (Rattlecage), 73.0
 	-- 28.0, Shatter (Gauntlet), 76.6, 21.9, 24.3, Shatter (Rattlecage), 56.0, 46.1
 end
 
 function mod:Shatter(args)
+	shatterCount = shatterCount + 1
+	if self:Mythic() then
+		self:StopBar(L.orbs)
+		self:CDBar(350676, 35, L.orbs) -- Orb of Torment
+		if shatterCount == 3 then
+        	self:CDBar(350469, 29, CL.bombs) -- Malevolence
+        	self:CDBar(355123, 45, L.cones) -- Grasp of Malice
+		end
+	end
 	self:Message(351066, "cyan")
 	self:PlaySound(351066, "long")
 end
