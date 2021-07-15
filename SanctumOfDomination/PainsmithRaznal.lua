@@ -38,6 +38,7 @@ if L then
 	L.chains = "Chains" -- Short for Shadowsteel Chains
 	L.embers = "Embers" -- Short for Shadowsteel Embers
 	L.adds = "Adds"
+	L.noGapWall = "Wall with No Gap!"
 end
 
 --------------------------------------------------------------------------------
@@ -102,7 +103,7 @@ function mod:OnEngage()
 	self:SetStage(1)
 
 	self:CDBar(355505, self:Mythic() and 8 or 11, CL.count:format(L.chains, chainsCount)) -- Shadowsteel Chains
-	self:CDBar(355568, self:Mythic() and 12 or 17, CL.count:format(L.axe, instrumentCount)) -- Axe
+	self:CDBar(355568, self:Mythic() and 10.5 or 17, CL.count:format(L.axe, instrumentCount)) -- Axe
 	self:CDBar(352052, self:Mythic() and 16 or 20, CL.count:format(self:SpellName(352052), spikedBallsCount)) -- Spiked Balls
 	self:CDBar(348456, self:Mythic() and 40 or 45, CL.count:format(CL.traps, trapsCount)) -- Flameclasp Trap
 
@@ -271,6 +272,7 @@ do
 		if self:Mythic() then
 			self:CDBar(355536, 50, L.adds) -- Mythic add spawn
 			self:CDBar(359495, 5, self:SpellName(359495)) -- Intermission Spiked Balls
+			self:CDBar(356808, 20, L.noGapWall) -- Intermission Spike Wall with no gap
 		end
 
 		self:Bar("stages", self:Mythic() and 51.8 or 41.8, CL.intermission, args.spellId) -- 35s (45 on Mythic) Forge Weapon + 6.8s to jump down
