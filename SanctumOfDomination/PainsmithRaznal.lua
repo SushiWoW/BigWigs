@@ -101,9 +101,9 @@ function mod:OnEngage()
 	chainsCount = 1
 	self:SetStage(1)
 
-	self:CDBar(355505, 11, CL.count:format(L.chains, chainsCount)) -- Shadowsteel Chains
+	self:CDBar(355505, self:Mythic() and 8 or 11, CL.count:format(L.chains, chainsCount)) -- Shadowsteel Chains
 	self:CDBar(355568, self:Mythic() and 12 or 17, CL.count:format(L.axe, instrumentCount)) -- Axe
-	self:CDBar(352052, self:Mythic() and 16.8 or 20, CL.count:format(self:SpellName(352052), spikedBallsCount)) -- Spiked Balls
+	self:CDBar(352052, self:Mythic() and 16 or 20, CL.count:format(self:SpellName(352052), spikedBallsCount)) -- Spiked Balls
 	self:CDBar(348456, self:Mythic() and 40 or 45, CL.count:format(CL.traps, trapsCount)) -- Flameclasp Trap
 
 	self:RegisterUnitEvent("UNIT_HEALTH", nil, "boss1")
