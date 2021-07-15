@@ -59,6 +59,8 @@ function mod:GetOptions()
 		{355505, "SAY", "SAY_COUNTDOWN", "ME_ONLY_EMPHASIZE"}, -- Shadowsteel Chains
 		shadowsteelChainsMarker,
 		355534, -- Shadowsteel Ember
+		355536, -- Shadowsteel Horror Spawns
+		359495, -- Intermission Spiked Balls
 	},{
 		["stages"] = "general",
 	},{
@@ -66,6 +68,7 @@ function mod:GetOptions()
 		[355568] = L.axe, -- Cruciform Axe (Axe)
 		[355778] = L.scythe, -- Dualblade Scythe (Scythe)
 		[355534] = L.embers, -- Shadowsteel Ember (Embers)
+		[355536] = L.adds, -- Shadowsteel Horror (Mythic Adds)
 	}
 end
 
