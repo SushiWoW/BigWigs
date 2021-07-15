@@ -38,7 +38,7 @@ if L then
 	L.chains = "Chains" -- Short for Shadowsteel Chains
 	L.embers = "Embers" -- Short for Shadowsteel Embers
 	L.adds = "Adds"
-	L.noGapWall = "Wall with No Gap!"
+	L.noGapWall = "Wall with no gap!"
 end
 
 --------------------------------------------------------------------------------
@@ -271,7 +271,7 @@ do
 		self:ScheduleTimer("RepeatEmber", 5)
 
 		if self:Mythic() then
-			self:CDBar(355536, 50, L.adds) -- Mythic add spawn
+			self:CDBar(355536, 45, L.adds) -- Mythic add spawn
 			self:CDBar(359495, 5, self:SpellName(359495)) -- Intermission Spiked Balls
 			self:CDBar(356808, 25, L.noGapWall) -- Intermission Spike Wall with no gap
 		end
