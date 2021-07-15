@@ -62,6 +62,7 @@ function mod:GetOptions()
 		355534, -- Shadowsteel Ember
 		355536, -- Shadowsteel Horror Spawns
 		359495, -- Intermission Spiked Balls
+		356808, -- Intermission Spike Wall with no Gap
 	},{
 		["stages"] = "general",
 	},{
