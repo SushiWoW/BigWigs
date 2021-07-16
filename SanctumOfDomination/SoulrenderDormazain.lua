@@ -18,13 +18,14 @@ local timersHeroic = {
 	[350217] = {12, 45.5, 45.5, 69.8, 43.9, 44.1, 63, 44, 44, 82.5}, -- Torment
 	[350422] = {10.7, 33, 33, 41, 54, 33, 33, 37, 60, 33, 41.5, 87.6}, -- Ruinblade _START (4/5 vary by a few seconds)
 }
-
 local timersMythic = {
-	[350411] = {55.5, 164.0, 43.0, 65, 55, 40, 60, 70, 60, 60}, -- Hellscream _START
-	[350615] = {25, 60, 100, 65, 75, 65, 60}, -- Call Mawsworn _START
-	[350217] = {12, 45.5, 45.5, 65.5, 33, 33, 30, 60, 30, 30, 30, 30, 30}, -- Torment
-	[350422] = {10.7, 33, 33, 41, 54, 33, 33, 37, 60, 33, 41.5, 87.6}, -- Ruinblade _START (4/5 vary by a few seconds)
+	[350411] = {55.5, 164.2, 42.7, 63.3, 51, 45.1, 65.8}, -- Hellscream _START
+           -- 55.1, 165.3, 41.5, 76.7, 45.1, 51.2 XXX delayed 4 from a delayed second dance, should account for these
+	[350615] = {24.6, 57.4, 102.8, 67.6, 97.4, 57.1, 101.2}, -- Call Mawsworn _START
+	[350217] = {12.1, 49.8, 48.6, 63.2, 33, 33, 33, 52.1, 31, 35.4, 31, 31}, -- Torment
+	[350422] = {8.5, 33, 33, 45, 49, 33, 33, 46, 68.0, 34, 33, 33}, -- Ruinblade _START (4/5 vary by a few seconds)
 }
+local timers = mod:Mythic() and timersMythic or timersHeroic
 
 local brandCount = 1
 local callMawswornCount = 1
@@ -34,8 +35,6 @@ local chainCount = 3
 local encoreOfTormentCount = 1
 local tormentCount = 1
 local mobCollector = {}
-
-local timers = mod:Mythic() and timersMythic or timersHeroic
 
 --------------------------------------------------------------------------------
 -- Localization
@@ -60,8 +59,6 @@ if L then
 	L.chain = "Chain" -- Soul Manacles
 	L.souls = "Souls" -- Rendered Soul
 
-	L.overlord = "Mawsworn Overlord" -- Mawsworn Overlord 
-
 	L.chains_remaining = "%d Chains remaining"
 	L.all_broken = "All Chains broken"
 end
@@ -82,6 +79,7 @@ function mod:GetOptions()
 		"custom_off_nameplate_tormented",
 		{350422, "TANK"}, -- Ruinblade
 		350615, -- Call Mawsworn
+		-23517, -- Mawsworn Overlord
 		agonizerMarker,
 		351779, -- Agonizing Spike
 		350650, -- Defiance
@@ -89,7 +87,7 @@ function mod:GetOptions()
 		350411, -- Hellscream
 		354231, -- Soul Manacles
 		351229, -- Rendered Soul
-		353554, -- Mythic Overlord Spawn Timer
+		"berserk",
 	},{
 	},{
 		[350217] = L.cones, -- Torment (Cones)
@@ -104,8 +102,7 @@ function mod:GetOptions()
 end
 
 function mod:OnBossEnable()
-	self:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", nil, "boss2") -- for Pain
-	-- self:Log("SPELL_CAST_SUCCESS", "Pain", 350766) -- Alternative for Torment
+	self:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", nil, "boss2") -- Torment
 	self:Log("SPELL_CAST_SUCCESS", "TormentedEruptions", 349985)
 	self:Log("SPELL_CAST_SUCCESS", "BrandOfTorment", 350648)
 	self:Log("SPELL_AURA_APPLIED", "BrandOfTormentApplied", 350647)
@@ -116,6 +113,7 @@ function mod:OnBossEnable()
 	self:Log("SPELL_AURA_APPLIED", "RuinbladeApplied", 350422)
 	self:Log("SPELL_AURA_APPLIED_DOSE", "RuinbladeApplied", 350422)
 	self:Log("SPELL_CAST_START", "CallMawsworn", 350615)
+	self:Log("SPELL_CAST_SUCCESS", "InfuseDefiance", 353554)
 	self:Log("SPELL_CAST_START", "AgonizingSpike", 351779)
 	self:Log("SPELL_AURA_APPLIED", "GarroshDefianceApplied", 350650) -- Buff they get when reaching Garrosh, not from the Overlord
 	self:Log("SPELL_AURA_APPLIED", "DefianceApplied", 351773) -- Overlord buff
@@ -133,6 +131,7 @@ function mod:OnBossEnable()
 end
 
 function mod:OnEngage()
+	timers = mod:Mythic() and timersMythic or timersHeroic
 	callMawswornCount = 1
 	ruinbladeCount = 1
 	hellscreamCount = 1
@@ -140,19 +139,16 @@ function mod:OnEngage()
 	tormentCount = 1
 	brandCount = 1
 	mobCollector = {}
-	timers = self:Mythic() and timersMythic or timersHeroic
 
+	if self:Mythic() then
+		self:Berserk(510, true) -- XXX should probably make this entirely silent
+	end
 	self:Bar(350422, timers[350422][ruinbladeCount]) -- Ruinblade
 	self:Bar(350217, timers[350217][tormentCount], CL.count:format(L.cones, tormentCount)) -- Torment
 	self:Bar(350615, timers[350615][callMawswornCount], CL.count:format(CL.adds, callMawswornCount)) -- Call Mawsworn
-	self:Bar(350647, timers[350647][brandCount], CL.count:format(L.brands, brandCount)) -- Brand of Torment
+	self:Bar(350647, 30.7, CL.count:format(L.brands, brandCount)) -- Brand of Torment
 	self:Bar(350411, timers[350411][hellscreamCount], CL.count:format(L.chains, hellscreamCount)) -- Hellscream
-	self:Bar(349985, 131.5, CL.count:format(L.dance, encoreOfTormentCount)) -- Tormented Eruptions
-
-	if self:Mythic() then
-		self:Berserk(500) --Mythic berserk timing, might be normal/heroic but unknown.
-	end
-
+	self:Bar(349985, 131, CL.count:format(L.dance, encoreOfTormentCount)) -- Tormented Eruptions
 end
 
 function mod:OnBossDisable()
@@ -185,25 +181,20 @@ do
 	end
 end
 
--- XXX Did this use to have a SPELL_CAST_SUCCESS? Wishful thinking?
 function mod:UNIT_SPELLCAST_SUCCEEDED(_, _, _, spellId)
-	if spellId == 350766 then
-		self:Pain()
+	if spellId == 350766 then -- Pain - Boss casting Torment on Garrosh
+		self:Message(350217, "yellow", CL.count:format(L.cones, tormentCount))
+		tormentCount = tormentCount + 1
+		self:Bar(350217, timers[350217][tormentCount], CL.count:format(L.cones, tormentCount))
+		self:RenderedSoul()
 	end
-end
-
-function mod:Pain() -- Boss casting Torment on Garrosh
-	self:Message(350217, "yellow", CL.count:format(L.cones, tormentCount))
-	tormentCount = tormentCount + 1
-	self:Bar(350217, timers[350217][tormentCount], CL.count:format(L.cones, tormentCount))
-	self:RenderedSoul()
 end
 
 function mod:TormentedEruptions(args)
 	self:Message(args.spellId, "cyan", CL.count:format(L.dance, encoreOfTormentCount))
 	self:PlaySound(args.spellId, "alert")
 	encoreOfTormentCount = encoreOfTormentCount + 1
-	self:Bar(args.spellId, 161.5, CL.count:format(L.dance, encoreOfTormentCount))
+	self:Bar(args.spellId, 161.1, CL.count:format(L.dance, encoreOfTormentCount))
 	-- XXX Schedule cast bars for each cone / use remaining events on retail
 
 	brandCount = 1
@@ -255,7 +246,7 @@ end
 
 function mod:Ruinblade(args)
 	ruinbladeCount = ruinbladeCount + 1
-	self:Bar(args.spellId, timers[args.spellId][ruinbladeCount] or 33)
+	self:Bar(args.spellId, timers[args.spellId][ruinbladeCount])
 end
 
 function mod:RuinbladeApplied(args)
@@ -282,15 +273,20 @@ do
 		self:PlaySound(args.spellId, "info")
 		callMawswornCount = callMawswornCount + 1
 		self:Bar(args.spellId, timers[args.spellId][callMawswornCount], CL.count:format(CL.adds, callMawswornCount))
+		if self:Mythic() then
+			self:Bar(-23517, 9, CL.big_add, 353554) -- Mawsworn Overlord
+		end
 		if self:GetOption(agonizerMarker) then
 			agonizersMarked = 0
 			self:RegisterTargetEvents("AgonizerMarking")
 			self:ScheduleTimer("UnregisterTargetEvents", 20)
 		end
-		if self:Mythic() then
-			self:Bar(353554, 9, L.overlord)
-		end
 	end
+end
+
+function mod:InfuseDefiance(args)
+	self:Message(-23517, "yellow", CL.big_add, args.spellId)
+	self:PlaySound(-23517, "info")
 end
 
 function mod:AgonizingSpike(args)
@@ -328,11 +324,17 @@ end
 
 function mod:Hellscream(args)
 	chainCount = 3
-	self:Message(args.spellId, "red", L.chains)
+	self:Message(args.spellId, "red", CL.count:format(L.chains, hellscreamCount))
 	self:PlaySound(args.spellId, "long")
 	self:CastBar(args.spellId, self:Mythic() and 25 or 35, L.chains)
+	self:CancelDelayedMessage(CL.soon:format(CL.count:format(L.chains, hellscreamCount))) -- how off is the timer
+	self:StopBar(CL.count:format(L.chains, hellscreamCount))
 	hellscreamCount = hellscreamCount + 1
-	self:Bar(args.spellId, timers[args.spellId][hellscreamCount], CL.count:format(L.chains, hellscreamCount))
+	local duration = timers[args.spellId][hellscreamCount]
+	self:Bar(args.spellId, duration, CL.count:format(L.chains, hellscreamCount))
+	if duration then
+		self:DelayedMessage(args.spellId, duration-10, "red", CL.soon:format(CL.count:format(L.chains, hellscreamCount)), nil, "alarm")
+	end
 	self:RenderedSoul()
 end
 
