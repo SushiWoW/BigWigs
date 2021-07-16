@@ -186,7 +186,7 @@ do
 			prev = t
 			playerList = {}
 			trapsCount = trapsCount + 1
-			self:Bar(args.spellId, self:GetStage() == 3 and 48 or 40, CL.count:format(CL.traps, trapsCount))
+			self:Bar(args.spellId, self:Mythic() and 40 or self:GetStage() == 3 and 48 or 40, CL.count:format(CL.traps, trapsCount))
 		end
 		playerList[#playerList+1] = args.destName
 		local mark = #playerList + 3
