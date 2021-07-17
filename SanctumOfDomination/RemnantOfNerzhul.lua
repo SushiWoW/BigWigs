@@ -92,7 +92,7 @@ function mod:OnEngage()
 	graspOfMaliceCount = 1
 
 
-	self:CDBar(350676, 13, CL.count:format(L.orbs, tormentCount)) -- Orb of Torment
+	self:CDBar(350676, 13, CL.count:format(L.orbs, orbOfTormentCount)) -- Orb of Torment
 	self:CDBar(349890, 20.3, CL.count:format(self:SpellName(349890), shatterCount)) -- Suffering
 	self:CDBar(350469, 26, CL.count:format(CL.bombs, malevolenceCount)) -- Malevolence 26~49??
 	self:CDBar(355123, 39, CL.count:format(L.cones, graspOfMaliceCount)) -- Grasp of Malice 39~65??
@@ -146,11 +146,11 @@ end
 
 function mod:UNIT_SPELLCAST_SUCCEEDED(_, _, _, spellId)
 	if spellId == 350676 then -- Orb of Torment
-	tormentCount = tormentCount + 1
+	orbOfTormentCount = orbOfTormentCount + 1
 		self:StopBar(L.orbs)
 		self:Message(spellId, "yellow", L.orbs)
 		self:PlaySound(spellId, "alert")
-		self:CDBar(spellId, self:Mythic() and 40 or 50, CL.count:format(L.orbs, tormentCount)) -- ???
+		self:CDBar(spellId, self:Mythic() and 40 or 50, CL.count:format(L.orbs, orbOfTormentCount)) -- ???
 		-- Shatter (Helm), 53.5, Shatter (Gauntlet), 51.1, 48.6, Shatter (Rattlecage), 58.5, 46.1
 		-- Shatter (Helm), 54.7, Shatter (Gauntlet), 74.1, 42.6, Shatter (Rattlecage), 60.8, 52.2
 	end
@@ -298,7 +298,7 @@ function mod:Shatter(args)
 	shatterCount = shatterCount + 1
 	if self:Mythic() then
 		self:StopBar(L.orbs)
-		self:CDBar(350676, 35, CL.count:format(L.orbs, tormentCount)) -- Orb of Torment
+		self:CDBar(350676, 35, CL.count:format(L.orbs, orbOfTormentCount)) -- Orb of Torment
 		if shatterCount == 3 then
         	self:CDBar(350469, 29, CL.count:format(CL.bombs, malevolenceCount)) -- Malevolence
         	self:CDBar(355123, 45, L.cones) -- Grasp of Malice
