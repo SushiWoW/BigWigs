@@ -31,7 +31,7 @@ local heroicTimers = {
 	[352833] = {6, 40.1}, -- Disintegration
 }
 local mythicTimers = {
- 	[350496] = {8.2, 17, 28, 17} -- Threat Neutralization
+ 	[350496] = {8.2, 17, 28, 17}, -- Threat Neutralization
  	[352833] = {6, 40}, -- Disintegration
 }
 
@@ -125,7 +125,7 @@ function mod:OnEngage()
 	threatNeutralizationCount = 1
 	obliterateCount = 1
 	sunderCount = 1
-	timers = not self:Easy() and heroicTimers or normalTimers
+	timers = self:Mythic() and mythicTimers or not self:Easy() and heroicTimers or normalTimers
 	beforePurge = true
 
 	self:CDBar(352660, 4, L.sentry) -- Form Sentry
