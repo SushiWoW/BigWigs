@@ -18,7 +18,7 @@ local instrumentCount = 1
 local spikedBallsCount = 1
 local trapsCount = 1
 local chainsCount = 1
-local intermissionBallsCount = 0
+local spikesTime = 0
 local weaponNames = {
 	[348508] = "hammer",
 	[355568] = "axe",
@@ -37,8 +37,9 @@ if L then
 	L.trap = "Trap" -- Short for Flameclasp Trap
 	L.chains = "Chains" -- Short for Shadowsteel Chains
 	L.embers = "Embers" -- Short for Shadowsteel Embers
-	L.adds = "Adds"
-	L.noGapWall = "Wall with no gap!"
+	L.adds_embers = "Embers (%d) - Adds Next!"
+	L.adds_killed = "Adds killed in %.2fs"
+	L.spikes = "Spiked Death"
 end
 
 --------------------------------------------------------------------------------
@@ -59,18 +60,17 @@ function mod:GetOptions()
 		flameclaspTrapMarker,
 		{355505, "SAY", "SAY_COUNTDOWN", "ME_ONLY_EMPHASIZE"}, -- Shadowsteel Chains
 		shadowsteelChainsMarker,
-		355534, -- Shadowsteel Ember
-		355536, -- Shadowsteel Horror Spawns
-		359495, -- Intermission Spiked Balls
-		356808, -- Intermission Spike Wall with no Gap
+		355534, -- Shadowsteel Embers
+		355536, -- Summon Shadowsteel Horror
+		357735, -- Final Scream
 	},{
 		["stages"] = "general",
 	},{
 		[348508] = L.hammer, -- Rippling Hammer (Hammer)
 		[355568] = L.axe, -- Cruciform Axe (Axe)
 		[355778] = L.scythe, -- Dualblade Scythe (Scythe)
-		[355534] = L.embers, -- Shadowsteel Ember (Embers)
-		[355536] = L.adds, -- Shadowsteel Horror (Mythic Adds)
+		[355534] = L.embers, -- Shadowsteel Embers (Embers)
+		[355536] = CL.adds, -- Summon Shadowsteel Horror (Adds)
 	}
 end
 
@@ -79,7 +79,6 @@ function mod:OnBossEnable()
 	self:Log("SPELL_AURA_REMOVED", "InstrumentRemoved", 348508, 355568, 355778)
 
 	self:Log("SPELL_AURA_APPLIED", "SpikedBalls", 352052)
-	self:Log("SPELL_AURA_APPLIED", "IntermissionSpikedBalls", 359495)
 	self:Log("SPELL_AURA_APPLIED", "BlackenedArmorApplied", 355786)
 
 	self:Log("SPELL_AURA_APPLIED", "FlameclaspTrapApplied", 348456)
@@ -92,7 +91,11 @@ function mod:OnBossEnable()
 	self:Log("SPELL_AURA_APPLIED", "ForgeWeapon", 355525)
 	self:Log("SPELL_AURA_REMOVED", "ForgeWeaponOver", 355525)
 
-	--self:Log("SPELL_SUMMON", "ShadowsteelEmber", 355536) -- XXX changed from PTR
+	self:Log("SPELL_SUMMON", "ShadowsteelHorror", 355536)
+	self:Log("SPELL_CAST_SUCCESS", "FinalScream", 357735)
+	self:Death("ShadowsteelHorrorDeath", 179847)
+
+	self:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", nil, "boss1")
 end
 
 function mod:OnEngage()
@@ -101,12 +104,13 @@ function mod:OnEngage()
 	spikedBallsCount = 1
 	trapsCount = 1
 	chainsCount = 1
+	spikesTime = GetTime() + 120
 	self:SetStage(1)
 
-	self:CDBar(355505, self:Mythic() and 8 or 11, CL.count:format(L.chains, chainsCount)) -- Shadowsteel Chains
-	self:CDBar(355568, self:Mythic() and 10.5 or 17, CL.count:format(L.axe, instrumentCount)) -- Axe
+	self:CDBar(355505, self:Mythic() and 8.5 or 11, CL.count:format(L.chains, chainsCount)) -- Shadowsteel Chains
+	self:CDBar(355568, self:Mythic() and 11 or 17, CL.count:format(L.axe, instrumentCount)) -- Axe
 	self:CDBar(352052, self:Mythic() and 16 or 20, CL.count:format(self:SpellName(352052), spikedBallsCount)) -- Spiked Balls
-	self:CDBar(348456, self:Mythic() and 40 or 45, CL.count:format(CL.traps, trapsCount)) -- Flameclasp Trap
+	self:CDBar(348456, self:Mythic() and 39 or 45, CL.count:format(CL.traps, trapsCount)) -- Flameclasp Trap
 
 	self:RegisterUnitEvent("UNIT_HEALTH", nil, "boss1")
 end
@@ -154,15 +158,15 @@ function mod:SpikedBalls(args)
 	self:Message(args.spellId, "red", CL.count:format(args.spellName, spikedBallsCount))
 	self:PlaySound(args.spellId, "alarm")
 	spikedBallsCount = spikedBallsCount + 1
-	self:Bar(args.spellId, self:GetStage() > 1 and 48 or 41, CL.count:format(args.spellName, spikedBallsCount))
-end
-
-function mod:IntermissionSpikedBalls(args)
-	intermissionBallsCount = intermissionBallsCount + 1
-	self:Message(args.spellId, "red",args.spellName, spikedBallsCount)
-	self:PlaySound(args.spellId, "alarm")
-	if intermissionBallsCount == 1 then
-		self:Bar(args.spellId, 20, args.spellName)
+	-- fourth ball is replaced with the room filling with spikes at 2:00 into the phase (longer or absent on non-mythic?)
+	-- if spikedBallsCount == 4 then
+	-- 	local remaining = spikesTime - GetTime()
+	-- 	self:Bar("berserk", remaining, L.spikes, 325254)
+	-- else
+	if self:GetStage() > 1 then
+		self:Bar(args.spellId, self:Mythic() and 40 or 48, CL.count:format(args.spellName, spikedBallsCount))
+	else
+		self:Bar(args.spellId, 41, CL.count:format(args.spellName, spikedBallsCount))
 	end
 end
 
@@ -186,7 +190,11 @@ do
 			prev = t
 			playerList = {}
 			trapsCount = trapsCount + 1
-			self:Bar(args.spellId, self:Mythic() and 40 or self:GetStage() == 3 and 48 or 40, CL.count:format(CL.traps, trapsCount))
+			if self:Mythic() and self:GetStage() < 3 then
+				self:Bar(args.spellId, self:GetStage() == 1 and 54 or 38, CL.count:format(CL.traps, trapsCount))
+			else
+				self:Bar(args.spellId, 40, CL.count:format(CL.traps, trapsCount))
+			end
 		end
 		playerList[#playerList+1] = args.destName
 		local mark = #playerList + 3
@@ -224,7 +232,7 @@ do
 		playerList[args.destName] = count -- Set raid marker
 		if self:Me(args.destGUID) then
 			self:Say(args.spellId, CL.rticon:format(L.chains, count))
-			self:SayCountdown(args.spellId, 3, count, 2) -- XXX workaround timer going negative
+			self:SayCountdown(args.spellId, 3, count, 2)
 			self:PlaySound(args.spellId, "warning")
 		end
 		self:NewTargetsMessage(args.spellId, "yellow", playerList, nil, CL.count:format(L.chains, chainsCount-1))
@@ -243,40 +251,85 @@ do
 end
 
 do
-	local emberCount = 0
-	function mod:RepeatEmber()
-		self:Message(355534, "yellow", CL.count:format(L.embers, emberCount))
-		emberCount = emberCount + 1
-		if emberCount < (self:Mythic() and 11 or 9) then
-			self:ScheduleTimer("RepeatEmber", 5)
-			self:Bar(355534, 5, CL.count:format(L.embers, emberCount))
+	local horrorCount = 0
+	local prev = 0
+	function mod:ShadowsteelHorror(args)
+		local t = args.time
+		if t-prev > 3 then
+			prev = t
+			self:Message(355536, "yellow", CL.adds)
+			self:PlaySound(355536, "alert")
+			self:CastBar(357735, 14) -- 2s + 12s cast
+			horrorCount = 0
 		end
-		self:PlaySound(355534, "alert")
+		horrorCount = horrorCount + 1
 	end
 
-	function mod:ForgeWeapon(args)
-		intermissionBallsCount = 0
+	function mod:ShadowsteelHorrorDeath(args)
+		horrorCount = horrorCount - 1
+		if horrorCount == 0 then
+			self:StopBar(CL.cast:format(self:SpellName(357735)))
+			self:Message(355536, "green", L.adds_killed:format(args.time - prev))
+			self:PlaySound(355536, "info")
+		end
+	end
+
+	function mod:FinalScream(args)
+		self:Message(357735, "red")
+		self:PlaySound(357735, "alarm")
+		horrorCount = -1
+	end
+end
+
+function mod:UNIT_SPELLCAST_SUCCEEDED(_, _, _, spellId)
+	if spellId == 355555 then -- [DNT] Upstairs
 		self:StopBar(CL.count:format(CL.traps, trapsCount)) -- Flameclasp Trap
 		self:StopBar(CL.count:format(self:SpellName(352052), spikedBallsCount)) -- Spiked Balls
 		self:StopBar(CL.count:format(L.chains, chainsCount)) -- Chains
 		self:StopBar(CL.count:format(L.hammer, instrumentCount)) -- Hammer
 		self:StopBar(CL.count:format(L.axe, instrumentCount)) -- Axe
+		self:StopBar(L.spikes)
+	end
+end
+
+do
+	local emberCount = 0
+	function mod:RepeatEmber()
+		if emberCount < 10 then -- Don't show for last on mythic
+			if self:Mythic() and emberCount == 9 then
+				self:Message(355534, "yellow", L.adds_embers:format(emberCount))
+				self:PlaySound(355534, "alarm")
+			else
+				self:Message(355534, "yellow", CL.count:format(L.embers, emberCount))
+				self:PlaySound(355534, "alert")
+			end
+		end
+		emberCount = emberCount + 1
+		if emberCount < (self:Mythic() and 11 or 9) then
+			self:ScheduleTimer("RepeatEmber", 5)
+			self:Bar(355534, 5, CL.count:format(L.embers, emberCount))
+		end
+	end
+
+	function mod:ForgeWeapon(args)
+		self:StopBar(CL.count:format(CL.traps, trapsCount)) -- Flameclasp Trap
+		self:StopBar(CL.count:format(self:SpellName(352052), spikedBallsCount)) -- Spiked Balls
+		self:StopBar(CL.count:format(L.chains, chainsCount)) -- Chains
+		self:StopBar(CL.count:format(L.hammer, instrumentCount)) -- Hammer
+		self:StopBar(CL.count:format(L.axe, instrumentCount)) -- Axe
+		self:StopBar(L.spikes)
 
 		self:Message("stages", "cyan", CL.intermission, args.spellId)
 		self:PlaySound("stages", "info")
-
 
 		emberCount = 2 -- First happens instantly on Intermission start
 		self:Bar(355534, 5, CL.count:format(L.embers, emberCount))
 		self:ScheduleTimer("RepeatEmber", 5)
 
-		if self:Mythic() then
-			self:CDBar(355536, 45, L.adds) -- Mythic add spawn
-			self:CDBar(359495, 5, self:SpellName(359495)) -- Intermission Spiked Balls
-			self:CDBar(356808, 25, L.noGapWall) -- Intermission Spike Wall with no gap
-		end
-
 		self:Bar("stages", self:Mythic() and 51.8 or 41.8, CL.intermission, args.spellId) -- 35s (45 on Mythic) Forge Weapon + 6.8s to jump down
+		if self:Mythic() then
+			self:Bar(355536, 47, CL.adds) -- Summon Shadowsteel Horror
+		end
 	end
 
 	function mod:ForgeWeaponOver(args)
@@ -284,15 +337,23 @@ do
 		spikedBallsCount = 1
 		trapsCount = 1
 		chainsCount = 1
+		spikesTime = GetTime() + 120
 		self:SetStage(self:GetStage() + 1)
+
 		self:Message("stages", "cyan", CL.soon:format(args.sourceName), false)
 		self:PlaySound("stages", "long")
 
-		self:Bar(355505, self:Mythic() and 10 or 14.6, CL.count:format(L.chains, chainsCount)) -- Shadowsteel Chains
+		if self:Mythic() then
+			self:Bar(355505, 10.7, CL.count:format(L.chains, chainsCount)) -- Shadowsteel Chains
+			self:Bar(352052, self:GetStage() < 3 and 19.7 or 15.8, CL.count:format(self:SpellName(352052), spikedBallsCount)) -- Spiked Balls
+			self:Bar(348456, self:GetStage() < 3 and 38.3 or 34.8, CL.count:format(CL.traps, trapsCount)) -- Flameclasp Trap
+		else
+			self:Bar(355505, 15, CL.count:format(L.chains, chainsCount)) -- Shadowsteel Chains
+			self:Bar(352052, 26, CL.count:format(self:SpellName(352052), spikedBallsCount)) -- Spiked Balls
+			self:Bar(348456, self:GetStage() == 3 and 48 or 36, CL.count:format(CL.traps, trapsCount)) -- Flameclasp Trap
+		end
 		-- Axe -> Hammer -> Scythe
 		local spellId = self:GetStage() == 3 and 355778 or 348508
 		self:Bar(spellId, 17, CL.count:format(L[weaponNames[spellId]], instrumentCount)) -- Instruments of Pain
-		self:Bar(352052, (self:Mythic() and self:GetStage() == 3 and 17) or self:Mythic() and 20 or 26, CL.count:format(self:SpellName(352052), spikedBallsCount)) -- Spiked Balls
-		self:Bar(348456, (self:Mythic() and self:GetStage() == 3 and 35) or self:Mythic() and 38 or (self:GetStage() == 3 and 48 or 36), CL.count:format(CL.traps, trapsCount)) -- Flameclasp Trap
 	end
 end
