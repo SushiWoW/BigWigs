@@ -814,7 +814,7 @@ function mod:BansheeShroudRemoved(args)
 	self:Message(args.spellId, "cyan", CL.removed:format(args.spellName), args.spellId)
 	self:PlaySound(args.spellId, "info")
 	bansheeShroudRemovedCount = bansheeShroudRemovedCount + 1
-	if bansheeShroudRemovedCount == 2 and then
+	if bansheeShroudRemovedCount == 2 then
 		self:Bar(args.spellId, self:Mythic() and 43 or 38)
 		self:CDBar(347670, self:Mythic() and 5 or 8.3) -- Shadow Dagger
 		-- variance is down to <2s by this point, so restart some bars here, second shroud not so much :\
@@ -822,7 +822,7 @@ function mod:BansheeShroudRemoved(args)
 			self:CDBar(347704, 23.3, CL.count:format(L.darkness, veilofDarknessCount)) -- Veil of Darkness
 			self:CDBar(348109, 46, CL.count:format(self:SpellName(348109), bansheeWailCount)) -- Banshee Wail
 		end
-	elseif bansheeShroudRemovedCount == 3 and then
+	elseif bansheeShroudRemovedCount == 3 then
 		self:Bar(args.spellId, 43)
 		self:CDBar(347670, 5) -- Shadow Dagger
 	end
