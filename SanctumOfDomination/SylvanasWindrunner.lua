@@ -43,12 +43,14 @@ local stageOneTimersHeroic = {
 	[347670] = {11, 47.9, 49.6, 8.2, 43.7, 49.9}, -- Shadow Dagger
 	[352650] = {20.5, 19.9, 16.5, 30.0, 5.9, 32.2, 16.1, 12.0, 26.2, 25.1, 4.7, 21.0, 29.22, 3.0}, -- Ranger's Heartseeker
 	[347704] = {45.0, 50.0, 48.2, 46.8, 50.55}, -- Veil of Darkness
+	[349419] = {23.2, 54, 54, 54, 54, 54, 54}, -- Domination Chains
 }
 local stageOneTimersMythic = {
-	[347504] = {6.8, 58, 55, 57, 60}, -- Windrunner
+	[347504] = {6.8, 58, 56, 57, 60, 52}, -- Windrunner
 	[347670] = {10, 54, 56, 8.8, 51, 55}, -- Shadow Dagger
-	[352650] = {20.5, 19.9, 16.5, 30.0, 5.9, 32.2, 16.1, 12.0, 26.2, 25.1, 4.7, 21.0, 29.22, 3.0}, -- Ranger's Heartseeker
-	[347704] = {50, 45, 45, 52, 35}, -- Veil of Darkness
+	[352650] = {18.6, 19.3, 8.7, 15.5, 17.3, 22.4, 4.8, 30.9, 20.5, 3, 4.8, 45.3}, -- Ranger's Heartseeker
+	[347704] = {52, 45, 46.7, 53.1, 35.4}, -- Veil of Darkness
+	[349419] = {28.9, 55.8, 64.0, 54.1, 50.8}, -- Domination Chains
 }
 local stageThreeTimersNormal = {
 	[354011] = {31.5, 81.1, 76.5, 80.0}, -- Bane Arrows
@@ -70,13 +72,16 @@ local stageThreeTimersHeroic = {
 	[347670] = {45.9, 77.4, 79.5, 73.8}, -- Shadow Dagger (353935 in stage 3)
 }
 local stageThreeTimersMythic = {
-	[354068] = {16.6, 49.5, 49.3, 53, 47.8, 48.2}, -- Banshee's Fury
-	[354011] = {28.7, 76.8, 73.2, 76.7}, -- Bane Arrows
+	[354068] = {38, 62, 62, 60, 62, 65}, -- Banshee's Fury
+	--[354011] = {15, 94}, -- Bane Arrows FIXME: Need more data
 	[353969] = {34.8, 20.5, 50.5, 3.0, 16.5, 21.3, 32, 12.0, 14.1, 18.9, 31.7, 23.2, 10.2}, -- Banshee's Heartseeker
-	[347704] = {39, 61.4, 51, 58.4, 61.3, 63.6}, -- Veil of Darkness
-	[347609] = {73, 55.8, 53.6, 55.6}, -- Wailing Arrow
-	[354147] = {82.1, 73.6, 72.3, 81.7}, -- Raze
-	[353952] = {92.7, 47.4, 54.9, 52.6, 54.6}, -- Banshee Scream
+	[347704] = {24, 56, 58, 56, 57, 57, 63.5}, -- Veil of Darkness
+	[347609] = {60, 70, 70, 67, 67}, -- Wailing Arrow
+	[358704] = {60, 70, 70, 67, 67}, -- Black Arrow
+	[354147] = {45, 105, 105, 105}, -- Raze
+	[353952] = {72, 110, 110}, -- Banshee Scream
+	[347670] = {65, 55, 55, 55, 55, 55}, -- Shadow Dagger (353935 in stage 3)
+	[358705] = {65, 55, 55, 55, 55, 55}, -- Death Knives FIXME: Unknown SpellID (353935 in stage 3)
 }
 local stageOneTimers = mod:Mythic() and stageOneTimersMythic or stageOneTimersHeroic
 local stageThreeTimers = mod:Mythic() and stageThreeTimersMythic or mod:Heroic() and stageThreeTimersHeroic or stageThreeTimersNormal
@@ -253,7 +258,7 @@ function mod:OnBossEnable()
 	-- Stage Three: The Freedom of Choice
 	self:Log("SPELL_CAST_START", "RaidPortalOribosStart", 357102)
 	self:Log("SPELL_CAST_SUCCESS", "BlasphemySuccess", 357729)
-	self:Log("SPELL_CAST_START", "ShadowDaggerP3", 353935) -- weird spell id to use!
+	self:Log("SPELL_CAST_START", "ShadowDaggerP3", 353935, 358433) -- weird spell id to use! Shadow Dagger / Death Knives
 	self:Log("SPELL_AURA_APPLIED", "BansheesBaneApplied", 353929)
 	self:Log("SPELL_AURA_APPLIED_DOSE", "BansheesBaneApplied", 353929)
 	self:Log("SPELL_CAST_START", "BaneArrows", 354011)
@@ -287,7 +292,7 @@ function mod:OnEngage()
 	self:Bar(347504, stageOneTimers[347504][windrunnerCount], CL.count:format(self:SpellName(347504), windrunnerCount)) -- Windrunner
 	self:Bar(347670, stageOneTimers[347670][shadowDaggerCount], CL.count:format(self:SpellName(347670), shadowDaggerCount)) -- Shadow Dagger
 	self:Bar(352650, stageOneTimers[352650][rangerHeartSeekerCount]) -- Ranger's Heartseeker
-	self:Bar(349458, 26, CL.count:format(L.chains, dominationChainsCount)) -- Domination Chains
+	self:Bar(349458, stageOneTimers[349419][dominationChainsCount], CL.count:format(L.chains, dominationChainsCount)) -- Domination Chains
 	self:Bar(347704, stageOneTimers[347704][veilofDarknessCount], CL.count:format(L.darkness, veilofDarknessCount)) -- Veil of Darkness
 	self:Bar(347609, self:Mythic() and 33 or 36.5, CL.count:format(L.arrow, wailingArrowCount)) -- Wailing Arrow
 
@@ -335,13 +340,13 @@ end
 function mod:DarkCommunion(args)
 	self:Message(args.spellId, "orange", L.orbs)
 	self:PlaySound(args.spellId, "long")
-	-- self:Bar(args.spellId, 16)
+	self:Bar(args.spellId, 16)
 end
 
 function mod:Filth(args)
 	self:Message(351591, "purple", CL.casting:format(args.spellName))
-	-- self:PlaySound(351591, "info")
-	-- self:Bar(351591, 20)
+	--self:PlaySound(351591, "info")
+	self:CDBar(351591, 13.5)
 end
 
 function mod:FilthApplied(args)
@@ -363,7 +368,7 @@ do
 			prev = t
 			playerList = {}
 			self:Message(args.spellId, "orange", CL.casting:format(args.spellName))
-			-- self:Bar(args.spellId, 20)
+			self:CDBar(args.spellId, 16)
 		end
 		local count = #playerList+1
 		local icon = count
@@ -579,7 +584,7 @@ do
 		if not intermission and self:GetStage() == 1 then
 			self:StopBar(CL.count:format(L.arrow, wailingArrowCount))
 			wailingArrowCount = wailingArrowCount + 1
-			self:Bar(args.spellId, self:Mythic() and 62 or 34, CL.count:format(L.arrow, wailingArrowCount))
+			self:Bar(args.spellId, self:Mythic() and 63.3 or 34, CL.count:format(L.arrow, wailingArrowCount))
 		elseif self:GetStage() == 3 and wailingArrowCastCount == 1 then
 			wailingArrowCount = wailingArrowCount + 1
 			self:Bar(args.spellId, stageThreeTimers[args.spellId][wailingArrowCount], L.arrow)
@@ -720,57 +725,86 @@ function mod:BansheeFormApplied()
 		bridgeCount = 1
 	end
 end
+do
+	local prev = 0
+	function mod:CreateBridge(args)
+		local t = args.time
+		if t - prev > 25 then 
+			prev = t
+			self:StopBar(351837) -- Channel Ice
+			self:StopBar(352842) -- Call Earth
 
-function mod:CreateBridge(args)
-	self:StopBar(351837) -- Channel Ice
-	self:StopBar(352842) -- Call Earth
+			self:Message("stages", "cyan", args.spellName, args.spellId)
+			self:PlaySound("stages", "info")
+			--[[
+			Ice   -> Wave x5
+			Earth -> Ruin 1 -> Shroud off 1 -> Veil -> Wail
+			Earth -> Wave -> Goliath/Souljudge -> Veil -> Wave -> Enrage Ruin
+			Ice   -> Goliath/Summoner -> Ruin 2 -> Wave -> Veil [-> Wail/Wave (pushing early?)] -> Enrage Ruin
+			Ice   -> Wail -> Souljudge/Summoner -> Ruin 3 -> Wave -> Veil [-> Wail/Wave (pushing early?)] -> Enrage Ruin
+			Earth -> Ruin 4 -> Shroud off 2 -> Wave -> Veil -> Wail -> Minor adds
+			Portal
 
-	self:Message("stages", "cyan", args.spellName, args.spellId)
-	self:PlaySound("stages", "info")
-	--[[
-	Ice   -> Wave x5
-	Earth -> Ruin 1 -> Shroud off 1 -> Veil -> Wail
-	Earth -> Wave -> Goliath/Souljudge -> Veil -> Wave -> Enrage Ruin
-	Ice   -> Goliath/Summoner -> Ruin 2 -> Wave -> Veil [-> Wail/Wave (pushing early?)] -> Enrage Ruin
-	Ice   -> Wail -> Souljudge/Summoner -> Ruin 3 -> Wave -> Veil [-> Wail/Wave (pushing early?)] -> Enrage Ruin
-	Earth -> Ruin 4 -> Shroud off 2 -> Wave -> Veil -> Wail -> Minor adds
-	Portal
-
-	Timers can vary 2~4s x.x (including Ruin, which should be stable T_T)
-	--]]
-	if bridgeCount == 1 then -- Ice
-		self:CDBar("stages", 32, 352842) -- Call Earth
-		self:CDBar(355540, 35.5, CL.count:format(self:SpellName(355540), ruinCount)) -- Ruin
-		self:CDBar(350857, 40.4, CL.removed:format(self:SpellName(350857)))-- Banshee Shroud Removed
-	elseif bridgeCount == 2 then -- Earth
-		self:CDBar(347704, 31.7, CL.count:format(L.darkness, veilofDarknessCount)) -- Veil of Darkness
-		self:CDBar(348109, 49.8, CL.count:format(self:SpellName(348109), bansheeWailCount)) -- Banshee Wail
-		self:CDBar("stages", 61.2, 352842) -- Call Earth
-	elseif bridgeCount == 3 then -- Earth
-		self:CDBar(352271, 3.2, CL.count:format(L.wave, hauntingWaveCount)) -- Haunting Wave
-		self:CDBar(347704, 24.6, CL.count:format(L.darkness, veilofDarknessCount)) -- Veil of Darkness
-		self:CDBar(352271, 44.6, CL.count:format(L.wave, hauntingWaveCount)) -- Haunting Wave
-		self:CDBar(355540, 52.2, CL.count:format(self:SpellName(355540), ruinCount)) -- Enrage Ruin
-	elseif bridgeCount == 4 then -- Ice
-		self:CDBar(352271, 6, CL.count:format(L.wave, hauntingWaveCount)) -- Haunting Wave
-		self:CDBar(355540, 11.2, CL.count:format(self:SpellName(355540), ruinCount)) -- Ruin
-		self:CDBar(347704, 28.6, CL.count:format(L.darkness, veilofDarknessCount)) -- Veil of Darkness
-		-- self:CDBar(355540, 52.2, CL.count:format(self:SpellName(355540), ruinCount)) -- Enrage Ruin
-	elseif bridgeCount == 5 then -- Ice
-		self:CDBar(348109, 5.5, CL.count:format(self:SpellName(348109), bansheeWailCount)) -- Banshee Wail
-		self:CDBar(355540, 11.1, CL.count:format(self:SpellName(355540), ruinCount)) -- Ruin
-		self:CDBar(352271, 35.2, CL.count:format(L.wave, hauntingWaveCount)) -- Haunting Wave
-		self:CDBar(347704, 36.9, CL.count:format(L.darkness, veilofDarknessCount)) -- Veil of Darkness
-		-- self:CDBar(355540, 52.2, CL.count:format(self:SpellName(355540), ruinCount)) -- Enrage Ruin
-	elseif bridgeCount == 6 then -- Earth
-		self:CDBar(355540, 7.1, CL.count:format(self:SpellName(355540), ruinCount)) -- Ruin
-		self:CDBar(350857, 12.5, CL.removed:format(self:SpellName(350857)))-- Banshee Shroud Removed
-		self:CDBar(352271, 28.7, CL.count:format(L.wave, hauntingWaveCount)) -- Haunting Wave
-		self:CDBar(347704, 37.1, CL.count:format(L.darkness, veilofDarknessCount)) -- Veil of Darkness
-		self:CDBar(348109, 48.5, CL.count:format(self:SpellName(348109), bansheeWailCount)) -- Banshee Wail
-		self:CDBar("stages", 65.72, CL.stage:format(3), 357102) -- Raid Portal: Oribos
+			Timers can vary 2~4s x.x (including Ruin, which should be stable T_T)
+			--]]
+			if not self:Mythic() then -- This is ugly, im sorry.
+				if bridgeCount == 1 then -- Ice
+					self:CDBar("stages", 32, 352842) -- Call Earth
+					self:CDBar(355540, 35.5, CL.count:format(self:SpellName(355540), ruinCount)) -- Ruin
+					self:CDBar(350857, 40.4, CL.removed:format(self:SpellName(350857)))-- Banshee Shroud Removed
+				elseif bridgeCount == 2 then -- Earth
+					self:CDBar(347704, 31.7, CL.count:format(L.darkness, veilofDarknessCount)) -- Veil of Darkness
+					self:CDBar(348109, 49.8, CL.count:format(self:SpellName(348109), bansheeWailCount)) -- Banshee Wail
+					self:CDBar("stages", 61.2, 352842) -- Call Earth
+				elseif bridgeCount == 3 then -- Earth
+					self:CDBar(352271, 3.2, CL.count:format(L.wave, hauntingWaveCount)) -- Haunting Wave
+					self:CDBar(347704, 24.6, CL.count:format(L.darkness, veilofDarknessCount)) -- Veil of Darkness
+					self:CDBar(352271, 44.6, CL.count:format(L.wave, hauntingWaveCount)) -- Haunting Wave
+					self:CDBar(355540, 52.2, CL.count:format(self:SpellName(355540), ruinCount)) -- Enrage Ruin
+				elseif bridgeCount == 4 then -- Ice
+					self:CDBar(352271, 6, CL.count:format(L.wave, hauntingWaveCount)) -- Haunting Wave
+					self:CDBar(355540, 11.2, CL.count:format(self:SpellName(355540), ruinCount)) -- Ruin
+					self:CDBar(347704, 28.6, CL.count:format(L.darkness, veilofDarknessCount)) -- Veil of Darkness
+					-- self:CDBar(355540, 52.2, CL.count:format(self:SpellName(355540), ruinCount)) -- Enrage Ruin
+				elseif bridgeCount == 5 then -- Ice
+					self:CDBar(348109, 5.5, CL.count:format(self:SpellName(348109), bansheeWailCount)) -- Banshee Wail
+					self:CDBar(355540, 11.1, CL.count:format(self:SpellName(355540), ruinCount)) -- Ruin
+					self:CDBar(352271, 35.2, CL.count:format(L.wave, hauntingWaveCount)) -- Haunting Wave
+					self:CDBar(347704, 36.9, CL.count:format(L.darkness, veilofDarknessCount)) -- Veil of Darkness
+					-- self:CDBar(355540, 52.2, CL.count:format(self:SpellName(355540), ruinCount)) -- Enrage Ruin
+				elseif bridgeCount == 6 then -- Earth
+					self:CDBar(355540, 7.1, CL.count:format(self:SpellName(355540), ruinCount)) -- Ruin
+					self:CDBar(350857, 12.5, CL.removed:format(self:SpellName(350857)))-- Banshee Shroud Removed
+					self:CDBar(352271, 28.7, CL.count:format(L.wave, hauntingWaveCount)) -- Haunting Wave
+					self:CDBar(347704, 37.1, CL.count:format(L.darkness, veilofDarknessCount)) -- Veil of Darkness
+					self:CDBar(348109, 48.5, CL.count:format(self:SpellName(348109), bansheeWailCount)) -- Banshee Wail
+					self:CDBar("stages", 65.72, CL.stage:format(3), 357102) -- Raid Portal: Oribos
+				end
+				bridgeCount = bridgeCount + 1
+			end
+		elseif self:Mythic() then
+				if bridgeCount == 1 then -- Ice and Earth
+					self:CDBar(355540, 48 , CL.count:format(self:SpellName(355540), ruinCount)) -- Ruin
+					self:CDBar(347704, 20, CL.count:format(L.darkness, veilofDarknessCount)) -- Veil of Darkness
+				elseif bridgeCount == 2 then -- Generals Death #1
+					self:CDBar(352271, 20, CL.count:format(L.wave, hauntingWaveCount)) -- Haunting Wave
+					self:CDBar(347704, 26, CL.count:format(L.darkness, veilofDarknessCount)) -- Veil of Darkness
+					self:CDBar(348109, 52, CL.count:format(self:SpellName(348109), bansheeWailCount)) -- Banshee Wail
+					self:CDBar(350857, 10, CL.removed:format(self:SpellName(350857)))-- Banshee Shroud Removed
+					self:CDBar("stages", 61.2, 352842) -- Call Ice & Earth
+				elseif bridgeCount == 3 then -- Ice and Earth
+					self:CDBar(347704, 20.6, CL.count:format(L.darkness, veilofDarknessCount)) -- Veil of Darkness
+					self:CDBar(355540, 52.2, CL.count:format(self:SpellName(355540), ruinCount)) -- Ruin
+				elseif bridgeCount == 4 then -- Generals Death #2
+					self:CDBar(352271, 20, CL.count:format(L.wave, hauntingWaveCount)) -- Haunting Wave
+					self:CDBar(347704, 26, CL.count:format(L.darkness, veilofDarknessCount)) -- Veil of Darkness
+					self:CDBar(348109, 52, CL.count:format(self:SpellName(348109), bansheeWailCount)) -- Banshee Wail
+					self:CDBar(350857, 8, CL.removed:format(self:SpellName(350857)))-- Banshee Shroud Removed
+					self:CDBar("stages", 65.72, CL.stage:format(3), 357102) -- Raid Portal: Oribos
+				end
+				bridgeCount = bridgeCount + 1
+		end
 	end
-	bridgeCount = bridgeCount + 1
 end
 
 function mod:BansheeShroudRemoved(args)
@@ -780,13 +814,15 @@ function mod:BansheeShroudRemoved(args)
 	self:Message(args.spellId, "cyan", CL.removed:format(args.spellName), args.spellId)
 	self:PlaySound(args.spellId, "info")
 	bansheeShroudRemovedCount = bansheeShroudRemovedCount + 1
-	if bansheeShroudRemovedCount == 2 then
-		self:Bar(args.spellId, 38)
-		self:CDBar(347670, 8.3) -- Shadow Dagger
+	if bansheeShroudRemovedCount == 2 and then
+		self:Bar(args.spellId, self:Mythic() and 43 or 38)
+		self:CDBar(347670, self:Mythic() and 5 or 8.3) -- Shadow Dagger
 		-- variance is down to <2s by this point, so restart some bars here, second shroud not so much :\
-		self:CDBar(347704, 23.3, CL.count:format(L.darkness, veilofDarknessCount)) -- Veil of Darkness
-		self:CDBar(348109, 46, CL.count:format(self:SpellName(348109), bansheeWailCount)) -- Banshee Wail
-	elseif bansheeShroudRemovedCount == 3 then
+		if not self:Mythic() then
+			self:CDBar(347704, 23.3, CL.count:format(L.darkness, veilofDarknessCount)) -- Veil of Darkness
+			self:CDBar(348109, 46, CL.count:format(self:SpellName(348109), bansheeWailCount)) -- Banshee Wail
+		end
+	elseif bansheeShroudRemovedCount == 3 and then
 		self:Bar(args.spellId, 43)
 		self:CDBar(347670, 5) -- Shadow Dagger
 	end
